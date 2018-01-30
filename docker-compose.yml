@@ -1,0 +1,38 @@
+version: '2.2'
+services:
+  search:
+    container_name: search
+    image: tribehang/search:develop
+    mem_limit: 2048m
+    env_file:
+      - .env
+      - .env.develop
+    volumes:
+      - .:/var/www/html
+    ports:
+      - "8080:80"
+    links:
+      - elasticsearch
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.1.2
+    container_name: elasticsearch
+    environment:
+      - cluster.name=elasticsearch
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - "~/.tribehang/search:/usr/share/elasticsearch/data"
+    ports:
+      - 9200:9200
+  kibana:
+    container_name: kibana
+    image: "docker.elastic.co/kibana/kibana:6.1.2"
+    hostname: kibana
+    links:
+      - elasticsearch
+    ports:
+      - "5601:5601"
